@@ -15,7 +15,9 @@ const CLIENT_SECRET = 'JxUqxPXJ6u2lD2iyaIhhrAOz';
 const REFRESH_TOKEN = '1/k1Do6CJj3nJPMSKyMxstZWDSGjanXnvLSAQh2wj7of4';
 const GDRIVE_FOLDER = '0By32UVl3qMIQeFN0TnJiWlhhclU';
 const GDRIVE_URL = 'https://www.googleapis.com/drive/v2';
-const BACKUP_FILE_PATH = '/home/frank/prueba/BackupLancaster.sql';
+const BACKUP_FILE_PATH = '/home/frank/prueba/';
+const BACKUP_FILE_NAME = 'BackupNODELancaster';
+
 
 
 
@@ -32,8 +34,8 @@ var auth = new googleapis.OAuth2Client();
 //armando el scheduler
 var rule = new schedule.RecurrenceRule();
 rule.dayOfWeek = [1, new schedule.Range(2,5)];
-rule.hour = 1;
-rule.minute = 03;
+rule.hour = 13;
+rule.minute = 25;
 
 var j = schedule.scheduleJob(rule, function(){
 
@@ -59,14 +61,15 @@ async.waterfall([
 	function(callback){
 			var date = new Date();
 	//ejecutamos el comando mysql q hace el backup
-	child = exec("mysqldump -u backuplancaster lancaster > " + BACKUP_FILE_PATH,
+	child = exec("mysqldump -u backuplancaster lancaster > " + BACKUP_FILE_PATH+BACKUP_FILE_NAME 
+			+"-"+date.getYear()+"-"+date.getMonth()+"-"+date.getDay()),
 		function(error,stdout,stderr){
 			sys.print('stdout: ' + stdout);
 			sys.print('stderr: ' + stderr);
 			if (error !== null) {
 				console.log('exec error: ' + error);
 			}	
-		});
+		};
 	console.log('termina backup');
 		//aca pedimos un token nuevo
 		tokenProvider.getToken(callback);
