@@ -15,8 +15,8 @@ const CLIENT_SECRET = 'JxUqxPXJ6u2lD2iyaIhhrAOz';
 const REFRESH_TOKEN = '1/k1Do6CJj3nJPMSKyMxstZWDSGjanXnvLSAQh2wj7of4';
 const GDRIVE_FOLDER = '0By32UVl3qMIQeFN0TnJiWlhhclU';
 const GDRIVE_URL = 'https://www.googleapis.com/drive/v2';
-const BACKUP_FILE_PATH = '/home/frank/prueba/';
-const BACKUP_FILE_NAME = 'BackupNODELancaster';
+const BACKUP_FILE_PATH = "/home/frank/prueba/";
+var BACKUP_FILE_NAME = "BackupNODELancaster";
 
 
 
@@ -33,9 +33,9 @@ var auth = new googleapis.OAuth2Client();
 
 //armando el scheduler
 var rule = new schedule.RecurrenceRule();
-rule.dayOfWeek = [1, new schedule.Range(2,5)];
-rule.hour = 13;
-rule.minute = 25;
+rule.dayOfWeek = [1, new schedule.Range(2,6)];
+rule.hour = 03;
+rule.minute = 07;
 
 var j = schedule.scheduleJob(rule, function(){
 
@@ -61,8 +61,12 @@ async.waterfall([
 	function(callback){
 			var date = new Date();
 	//ejecutamos el comando mysql q hace el backup
-	child = exec("mysqldump -u backuplancaster lancaster > " + BACKUP_FILE_PATH+BACKUP_FILE_NAME 
-			+"-"+date.getYear()+"-"+date.getMonth()+"-"+date.getDay()),
+	console.log("formato path y file name "+BACKUP_FILE_PATH+BACKUP_FILE_NAME 
+			+"-"+date.getFullYear()+"-"+(date.getMonth()+1)+"-"+date.getDate()+".sql");
+	var contNombre = "-"+date.getFullYear()+"-"+(date.getMonth()+1)+"-"+date.getDate()+".sql";
+	BACKUP_FILE_NAME = BACKUP_FILE_NAME + contNombre;
+
+	child = exec("mysqldump -u backuplancaster lancaster > " + BACKUP_FILE_PATH+BACKUP_FILE_NAME),
 		function(error,stdout,stderr){
 			sys.print('stdout: ' + stdout);
 			sys.print('stderr: ' + stderr);
@@ -78,7 +82,7 @@ async.waterfall([
 	function(accessToken, callback){
 		//aca enviamos el archivo a google drive
 		var fstatus = fs.statSync(BACKUP_FILE_PATH);
-    fs.open(BACKUP_FILE_PATH, 'r', function(status, fileDescripter) {
+    fs.open(BACKUP_FILE_PATH+BACKUP_FILE_NAME, 'r', function(status, fileDescripter) {
       if (status) {
         callback(status.message);
         return;
@@ -101,7 +105,7 @@ async.waterfall([
             {
               'Content-Type': 'application/json; charset=UTF-8',
               'body': JSON.stringify({
-                 'title': BACKUP_FILE_PATH,
+                 'title': BACKUP_FILE_NAME,
                  'parents': [
                    {
                      'id': GDRIVE_FOLDER
