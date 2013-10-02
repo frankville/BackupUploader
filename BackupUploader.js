@@ -6,7 +6,8 @@ var exec = require('child_process').exec;
 var request = require('request');
 var async = require('async');
 var child;
-
+var fechlog = new Date();
+console.log("Arranco el script a las "+fechlog.getHours()+":"+fechlog.getMinutes()+":"+fechlog.getSeconds());
 //creando el accesso a g drive
 var GoogleTokenProvider = require('refresh-token').GoogleTokenProvider;
 
@@ -34,8 +35,8 @@ var auth = new googleapis.OAuth2Client();
 //armando el scheduler
 var rule = new schedule.RecurrenceRule();
 rule.dayOfWeek = [1, new schedule.Range(2,6)];
-rule.hour = 03;
-rule.minute = 07;
+rule.hour = 22;
+rule.minute = 8;
 
 var j = schedule.scheduleJob(rule, function(){
 
