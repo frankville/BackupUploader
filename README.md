@@ -5,14 +5,16 @@ cuenta de google drive.
 USO
 
 El script BackupUploaderInit es el encargado de ejecutar el programa principal
-al inicio del sistema (Debian). Solo hay que agregar el link simbolico para
- que pueda iniciar el script siempre que el sistema se inicie.
+al inicio del sistema (Debian). Solo hay que agregar una linea al script 
+/etc/rc.local (debian) con una llamada al script BackupUploaderInit .
 
-hay que ejecutar: 
+Editamos el script /etc/rc.local: 
 
-root@skx:~# update-rc.d BackupUploaderInit defaults
+root@frankdebian:~$ nano /etc/rc.local 
 
+y añadimos una llamada al script BackupUploaderInit
 
+/home/frank/BackupUploader/BackupUploaderInit
 
 
 Author: Francisco Villasanti
