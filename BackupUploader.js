@@ -1,3 +1,5 @@
+//Author: Francisco Villasanti, twitter: @FrankVillasanti. Code. share. progress
+
 var schedule = require('node-schedule');
 var fs = require('fs');
 var sys = require('sys');
