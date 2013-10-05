@@ -7,17 +7,17 @@ var request = require('request');
 var async = require('async');
 var child;
 var fechlog = new Date();
-console.log("Arranco el script a las "+fechlog.getHours()+":"+fechlog.getMinutes()+":"+fechlog.getSeconds());
-//creando el accesso a g drive
+console.log("script init at "+fechlog.getHours()+":"+fechlog.getMinutes()+":"+fechlog.getSeconds());
+//creating google drive access 
 var GoogleTokenProvider = require('refresh-token').GoogleTokenProvider;
 
-const CLIENT_ID = '908994723046.apps.googleusercontent.com';
-const CLIENT_SECRET = 'JxUqxPXJ6u2lD2iyaIhhrAOz';
-const REFRESH_TOKEN = '1/k1Do6CJj3nJPMSKyMxstZWDSGjanXnvLSAQh2wj7of4';
-const GDRIVE_FOLDER = '0By32UVl3qMIQeFN0TnJiWlhhclU';
-const GDRIVE_URL = 'https://www.googleapis.com/drive/v2';
-const BACKUP_FILE_PATH = "/home/frank/prueba/";
-var BACKUP_FILE_NAME = "BackupNODELancaster";
+const CLIENT_ID = '<your-id>.apps.googleusercontent.com';
+const CLIENT_SECRET = '<your-client-secret>';
+const REFRESH_TOKEN = '1/<your-refresh-token>';
+const GDRIVE_FOLDER = '<your-google-drive-folder-id>';
+const GDRIVE_URL = 'https://www.googleapis.com/drive/v2';// don't need to modify this
+const BACKUP_FILE_PATH = "/path/to-your/backup/directory";
+var BACKUP_FILE_NAME = "<name-for-backup-file>";
 
 
 
@@ -32,42 +32,41 @@ var auth = new googleapis.OAuth2Client();
 
 
 
-//armando el scheduler
+//coding the scheduler
 var rule = new schedule.RecurrenceRule();
-rule.dayOfWeek = [1, new schedule.Range(2,6)];
+rule.dayOfWeek = [1, new schedule.Range(2,5)];//this goes from monday to friday
 rule.hour = 22;
 rule.minute = 8;
 
 var j = schedule.scheduleJob(rule, function(){
 
 	googleapis.discover('drive','v2').execute(function(err1,client){
-		//aca va el codigo para subir el archivo a google drive
+		//call to the function that executes backup and uploads the file
 		uploadFile();
 
 		if(err1 !== null){
-			console.log('error en discover google ',err1);
+			console.log('error on discover google ',err1);
 		}
 
-	});//fin del bloque de google-discover
+	});//end google-discover block
 
 
-});//fin del bloque de schedule
+});//end schedule block
 
 var uploadFile = function () {
 
 async.waterfall([
-//aca viene el array de funciones; una se ejecuta desp de la otra
-//y la funcion anterior debe llamar a callback con un parametro que va a ser
-//entrada de la siguiente funcion
+// this is a convenient method of async that takes an
+// array of functions that will be executed one after another passing
+ // the output from the previous one as an input to the next function 
 	function(callback){
 			var date = new Date();
-	//ejecutamos el comando mysql q hace el backup
-	console.log("formato path y file name "+BACKUP_FILE_PATH+BACKUP_FILE_NAME 
-			+"-"+date.getFullYear()+"-"+(date.getMonth()+1)+"-"+date.getDate()+".sql");
+	//execute mysqldump
+	
 	var contNombre = "-"+date.getFullYear()+"-"+(date.getMonth()+1)+"-"+date.getDate()+".sql";
 	BACKUP_FILE_NAME = BACKUP_FILE_NAME + contNombre;
 
-	child = exec("mysqldump -u backuplancaster lancaster > " + BACKUP_FILE_PATH+BACKUP_FILE_NAME),
+	child = exec("mysqldump -u <your-mysql-backup-user> <your-database-name> > " + BACKUP_FILE_PATH+BACKUP_FILE_NAME),
 		function(error,stdout,stderr){
 			sys.print('stdout: ' + stdout);
 			sys.print('stderr: ' + stderr);
@@ -75,13 +74,13 @@ async.waterfall([
 				console.log('exec error: ' + error);
 			}	
 		};
-	console.log('termina backup');
-		//aca pedimos un token nuevo
+	console.log('backup ended');
+		//ask for a new token
 		tokenProvider.getToken(callback);
-			console.log('termina peticion token');
+			console.log('token request ended');
 	},
 	function(accessToken, callback){
-		//aca enviamos el archivo a google drive
+		//send file to google drive
 		var fstatus = fs.statSync(BACKUP_FILE_PATH);
     fs.open(BACKUP_FILE_PATH+BACKUP_FILE_NAME, 'r', function(status, fileDescripter) {
       if (status) {
@@ -123,21 +122,24 @@ async.waterfall([
         
       });
     });
-	console.log('termina subida archivo');
+	console.log('file upload ended');
 	},
 	function(response, body, callback){
-		//esta funcion es la ultima. Hace el parsing de la respuesta
+		// parse the content of the body 
 		var body = JSON.parse(body);
 		callback(null,body);
-		console.log('termina parsing');
+		console.log('parsing ended');
 	}
 
 	], function(err, results){
-		//esta es la funcion callback del waterfall
+		 
+		//function that prints results to standard output (stdout)
+		//or standard error (stderr) 
+		
 		if(!err){
 			console.log(results);
 		} else {
-			console.error('---error en el callback de waterfall');
+			console.error('---error on callback');
 			console.error(err);
 		}
 	}
